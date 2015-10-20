@@ -1,6 +1,6 @@
-(ns aws-teste.core-test
+(ns emr-connect.core-test
   (:require [clojure.test :refer :all]
-            [aws-teste.core :refer :all]
+            [emr-connect.core :refer :all]
             [clojure.tools.logging :refer :all :as log]
             [clojure.java.io :as io]
             [amazonica.aws.s3 :as s3])
@@ -23,4 +23,6 @@
 
 (deftest aws-auth-test
   (testing "AWS Authentication"
-    (s3/list-buckets)))
+    (is (= true
+          (vector? (s3/list-buckets))))))
+    

@@ -1,10 +1,14 @@
 # aws-teste
 
-FIXME: description
+Aplicação teste para AWS MapReduce.
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Instalar `lein` e baixar dependencias do projeto: `lein deps`
+Instalar `aws-cli` e configurar credenciais: `aws configure`
+
+
+
 
 ## Usage
 

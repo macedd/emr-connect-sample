@@ -1,4 +1,4 @@
-(ns aws-teste.core
+(ns emr-connect.core
   (:require [clojure.tools.logging :as log]
             [amazonica.aws.ec2 :as ec2])
   (:gen-class))
