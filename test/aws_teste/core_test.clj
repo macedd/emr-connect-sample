@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [aws-teste.core :refer :all]
             [clojure.tools.logging :refer :all :as log]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [amazonica.aws.s3 :as s3])
   (:use [clojure.string]))
 
 (deftest a-test
@@ -19,3 +20,7 @@
     (def logcontent (slurp logfile))
     (is (= true
           (boolean (.contains logcontent logstring))))))
+
+(deftest aws-auth-test
+  (testing "AWS Authentication"
+    (s3/list-buckets)))

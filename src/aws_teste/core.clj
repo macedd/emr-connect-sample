@@ -1,5 +1,6 @@
 (ns aws-teste.core
-  (:require [clojure.tools.logging :as log])
+  (:require [clojure.tools.logging :as log]
+            [amazonica.aws.ec2 :as ec2])
   (:gen-class))
 
 (defn -main
@@ -7,4 +8,4 @@
   [& args]
   (log/info "Right here!")
   (println "Hello, World!")
-)
+  (ec2/describe-instances))
