@@ -15,7 +15,7 @@
   (:gen-class))
 
 (defn bucket-exists [bucket-name]
-  "Check if bucket name exists in current user S3"
+  "Check if bucket name exists in the user S3"
   (let [buckets (s3/list-buckets)]
     (= 1
       (count
@@ -57,19 +57,21 @@
 
       :instances
         {:instance-groups [
-           {:instance-type "m1.large"
+           {:instance-type "m1.small"
             :instance-role "MASTER"
             :instance-count 1
-            :market "SPOT"
-            :bid-price "0.10"}]}
+            :market "ON_DEMAND"}]}
 
       :steps [
-        {:name "my-step"
-         :action-on-failure "CANCEL_AND_WAIT"
+        {:name "sample-hadoop-streaming"
+         ; :action-on-failure "CANCEL_AND_WAIT"
          :hadoop-jar-step
-           {:jar "s3n://beee0534-ad04-4143-9894-8ddb0e4ebd31/hadoop-jobs/bigml"
+           {:jar "/usr/lib/hadoop-mapreduce/hadoop-streaming.jar"
             :main-class "bigml.core"
-            :args ["s3n://beee0534-ad04-4143-9894-8ddb0e4ebd31/data" "output"]}}])
+            :args [(join "/" ["s3n:/" bucket "data"]) "output"
+                  "s3://elasticmapreduce/samples/wordcount/input" "input"
+                  "s3://elasticmapreduce/samples/wordcount/wordSplitter.py" "mapper"
+                  "aggregate" "reducer"]}}])
   ))
 
 (defn running-jobs [job-name]
