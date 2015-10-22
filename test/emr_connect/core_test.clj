@@ -3,7 +3,7 @@
             [emr-connect.core :refer :all]
             [clojure.tools.logging :refer :all :as log]
             [clojure.java.io :as io]
-            [amazonica.aws.s3 :as s3])
+            [environ.core :refer [env]])
   (:use [clojure.string :only (join)]))
 
 (deftest a-test
@@ -26,3 +26,7 @@
     ; check string logged is in the log file
     (is (= true
           (boolean (.contains logcontent logstring))))))
+
+(deftest env-test
+  (testing "Environ defined Variables"
+    (is (= false (empty? (env :job-name))))))

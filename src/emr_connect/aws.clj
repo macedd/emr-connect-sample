@@ -23,25 +23,58 @@
           #(= bucket-name (:name %))
           buckets)))))
 
-(defn init-log-bucket [job-name]
-  "Create bucket for logs and set its permission / configuration"
-  (let [bucket-name (join "-" [job-name "logs"])]
-    (log/info ["Initing log bucket" bucket-name])
-    (cond
-      (= false (bucket-exists bucket-name))
-        (do
-          (s3/create-bucket bucket-name)
-          
-          (let [acl (new AccessControlList) group (coerce-value "LogDelivery" Grantee) curr (s3/get-bucket-acl bucket-name)]
-            (.grantPermission acl group (coerce-value "Write" Permission))
-            (.grantPermission acl group (coerce-value "READ_ACP" Permission))
-            (.setOwner acl (coerce-value (:owner curr) Owner))
-            (s3/set-bucket-acl bucket-name acl))
+(defn init-bucket [job-name]
+  "Create bucket for the job and set its permission / configuration"
+  ; (let [bucket-name (join "-" [job-name "logs"])]
+    (let [bucket-name job-name]
+      (log/info ["Initing job bucket" bucket-name])
+      (cond
+        (= false (bucket-exists bucket-name))
+          (do
+            (s3/create-bucket bucket-name)
+            
+            (let [acl (new AccessControlList) group (coerce-value "LogDelivery" Grantee) curr (s3/get-bucket-acl bucket-name)]
+              (.grantPermission acl group (coerce-value "Write" Permission))
+              (.grantPermission acl group (coerce-value "READ_ACP" Permission))
+              (.setOwner acl (coerce-value (:owner curr) Owner))
+              (s3/set-bucket-acl bucket-name acl))
 
-          (s3/set-bucket-logging-configuration  :bucket-name bucket-name
-                                                :logging-configuration
-                                                  {:log-file-prefix "hadoop-job_"
-                                                   :destination-bucket-name bucket-name}))
-      :else
-        (log/info ["Log bucket" bucket-name "already exists"]))))
+            (s3/set-bucket-logging-configuration  :bucket-name bucket-name
+                                                  :logging-configuration
+                                                    {:log-file-prefix "hadoop-job_"
+                                                     :destination-bucket-name bucket-name}))
+        :else
+          (log/info ["Log bucket" bucket-name "already exists"]))))
 
+(defn run-job [job-name]
+  "Run the EMR Job"
+  (let [bucket job-name]
+    (emr/run-job-flow
+      :name job-name
+      :log-uri (join "/" ["s3n:/" bucket "logs"])
+      :service-role "EMR_DefaultRole"
+      :job-flow-role "EMR_EC2_DefaultRole"
+
+      :instances
+        {:instance-groups [
+           {:instance-type "m1.large"
+            :instance-role "MASTER"
+            :instance-count 1
+            :market "SPOT"
+            :bid-price "0.10"}]}
+
+      :steps [
+        {:name "my-step"
+         :action-on-failure "CANCEL_AND_WAIT"
+         :hadoop-jar-step
+           {:jar "s3n://beee0534-ad04-4143-9894-8ddb0e4ebd31/hadoop-jobs/bigml"
+            :main-class "bigml.core"
+            :args ["s3n://beee0534-ad04-4143-9894-8ddb0e4ebd31/data" "output"]}}])
+  ))
+
+(defn running-jobs [job-name]
+  "Number of jobs running"
+  (count
+    (filter
+      #(= job-name (:name %))
+      (:clusters (emr/list-clusters)))))

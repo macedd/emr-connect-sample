@@ -7,7 +7,7 @@ Aplicação teste para AWS MapReduce.
 Instalar `lein` e baixar dependencias do projeto: `lein deps`
 Instalar `aws-cli` e configurar credenciais: `aws configure`
 
-Required AWS Credential (full) Permissions for: S3, ElasticMapReduce, EC2, IAM
+Required AWS Credential (full) Permissions: **S3, ElasticMapReduce, EC2, IAM**
 
 Create EMR default roles: `aws emr create-default-roles`
 
