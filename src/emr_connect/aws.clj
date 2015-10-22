@@ -34,6 +34,7 @@
             (s3/create-bucket bucket-name)
             
             (let [acl (new AccessControlList) group (coerce-value "LogDelivery" Grantee) curr (s3/get-bucket-acl bucket-name)]
+              (.grantPermission acl (coerce-value (:id (:owner curr)) Grantee) (coerce-value "Read" Permission))
               (.grantPermission acl group (coerce-value "Write" Permission))
               (.grantPermission acl group (coerce-value "READ_ACP" Permission))
               (.setOwner acl (coerce-value (:owner curr) Owner))
@@ -64,14 +65,13 @@
 
       :steps [
         {:name "sample-hadoop-streaming"
-         ; :action-on-failure "CANCEL_AND_WAIT"
+         :action-on-failure "TERMINATE_JOB_FLOW"
          :hadoop-jar-step
            {:jar "/usr/lib/hadoop-mapreduce/hadoop-streaming.jar"
-            :main-class "bigml.core"
-            :args [(join "/" ["s3n:/" bucket "data"]) "output"
-                  "s3://elasticmapreduce/samples/wordcount/input" "input"
-                  "s3://elasticmapreduce/samples/wordcount/wordSplitter.py" "mapper"
-                  "aggregate" "reducer"]}}])
+            :args ["-output" (join "/" ["s3n:/" bucket "data"])
+                  "-input" "s3://elasticmapreduce/samples/wordcount/input"
+                  "-mapper" "s3://elasticmapreduce/samples/wordcount/wordSplitter.py"
+                  "-reducer" "aggregate"]}}])
   ))
 
 (defn running-jobs [job-name]
