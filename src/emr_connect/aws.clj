@@ -1,6 +1,7 @@
 (ns emr-connect.aws
   (:require [amazonica.aws.elasticmapreduce :as emr]
             [amazonica.aws.s3 :as s3]
+            [amazonica.aws.ec2 :as ec2]
             [clojure.tools.logging :refer :all :as log])
   (:import [com.amazonaws.services.s3.model
               Grant
@@ -9,7 +10,8 @@
               Permission
               Owner
               AccessControlList])
-  (:use [amazonica.core :only (coerce-value)])
+  (:use [amazonica.core :only (coerce-value)]
+        [clojure.string :only (join)])
   (:gen-class))
 
 (defn bucket-exists [bucket-name]
@@ -21,16 +23,14 @@
           #(= bucket-name (:name %))
           buckets)))))
 
-(defn init-log-bucket [name]
+(defn init-log-bucket [job-name]
   "Create bucket for logs and set its permission / configuration"
-  (let [bucket-name (clojure.string/join "-" [name "logs"])]
+  (let [bucket-name (join "-" [job-name "logs"])]
     (log/info ["Initing log bucket" bucket-name])
     (cond
       (= false (bucket-exists bucket-name))
         (do
-          (s3/create-bucket :bucket-name bucket-name
-                            :access-control-list
-                              {:grant-permission ["LogDelivery" "Write"]})
+          (s3/create-bucket bucket-name)
           
           (let [acl (new AccessControlList) group (coerce-value "LogDelivery" Grantee) curr (s3/get-bucket-acl bucket-name)]
             (.grantPermission acl group (coerce-value "Write" Permission))

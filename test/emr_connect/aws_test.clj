@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [emr-connect.aws :refer :all]
             [amazonica.aws.s3 :as s3])
-  (:use [clojure.string]))
+  (:use [clojure.string :only (join)]))
 
 (deftest auth-test
   (testing "AWS Authentication"

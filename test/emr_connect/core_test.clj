@@ -4,7 +4,7 @@
             [clojure.tools.logging :refer :all :as log]
             [clojure.java.io :as io]
             [amazonica.aws.s3 :as s3])
-  (:use [clojure.string]))
+  (:use [clojure.string :only (join)]))
 
 (deftest a-test
   (testing "FIXME, I (dont) fail."
